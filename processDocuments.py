@@ -45,6 +45,9 @@ class DocumentProcessor(ThreadedDocumentProcessor):
 
 
 def main(collection, numberOfThreads):
+    with open('startTime.txt', 'a') as f:
+        message = f'{utils.getTimestamp()} Started'
+        f.write(message)
     query = {}
     dataDistributor = DocumentProcessor(collection, numberOfThreads, query)
     dataDistributor.run()
