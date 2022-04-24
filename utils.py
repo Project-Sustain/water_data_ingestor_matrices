@@ -1,65 +1,42 @@
 
-import os, logging, json
+import logging, json
 from datetime import datetime
 
 
 def getJSON(file):
     f = open(file)
-    jsonObject = json.load(f)
+    json_object = json.load(f)
     f.close()
-    return jsonObject
+    return json_object
 
 
-def documentShouldBeProcessedByThisThread(threadNumber, documentNumber, numberOfThreads):
-    if documentNumber > numberOfThreads:
-        return threadNumber == (documentNumber % numberOfThreads) + 1
+def documentShouldBeProcessedByThisThread(thread_number, document_number, number_of_threads):
+    if document_number > number_of_threads:
+        return thread_number == (document_number % number_of_threads) + 1
     else:
-        return threadNumber == documentNumber
+        return thread_number == document_number
 
 
-# def numberOfDocumentsProcessedByThisThread(file):
-#     try:
-#         with open(file, 'r') as f:
-#             return int(f.readlines()[1].split(' ')[4].split('/')[0])
-#     except:
-#         return 0
-
-
-# def lastAbsoluteDocumentNumberProcessedByThisThread(file):
-#     try:
-#         with open(file, 'r') as f:
-#             return int(f.readlines()[1].split(' ')[6])
-#     except:
-#         return 0
-
-
-def totalNumberOfDocumentsThisThreadMustProcess(threadNumber, totalDocuments, NUM_THREADS):
-    genericTotal = totalDocuments // NUM_THREADS
-    leftover = totalDocuments % NUM_THREADS
-    if threadNumber <= leftover:
-        return genericTotal + 1
+def totalNumberOfDocumentsThisThreadMustProcess(thread_number, total_documents, number_of_threads):
+    generic_total = total_documents // number_of_threads
+    leftover = total_documents % number_of_threads
+    if thread_number <= leftover:
+        return generic_total + 1
     else:
-        return genericTotal
+        return generic_total
 
 
 def getTimestamp():
     return '[' + datetime.now().strftime("%m/%d/%Y %H:%M:%S") + ']'
 
 
-def logProgress(documentsProcessedByThisThread, totalDocumentsForThisThread, threadNumber, documentNumber):
-    percent_done = round((documentsProcessedByThisThread / (totalDocumentsForThisThread)) * 100, 5)
-    progressMessage = f'{getTimestamp()} [Thread-{threadNumber}] {percent_done}% {documentsProcessedByThisThread}/{totalDocumentsForThisThread} Document {documentNumber}'
-    print(progressMessage)
+def logProgress(documents_processed_by_this_thread, total_documents_for_this_thread, thread_number, document_number):
+    percent_done = round((documents_processed_by_this_thread / (total_documents_for_this_thread)) * 100, 5)
+    progress_message = f'{getTimestamp()} [Thread-{thread_number}] {percent_done}% {documents_processed_by_this_thread}/{total_documents_for_this_thread} Document {document_number}'
+    print(progress_message)
 
 
-def logError(logger, e, threadNumber):
-    errorMessage = f'{getTimestamp()} [Thread-{threadNumber}] {e}'
-    logger.log(logging.ERROR, errorMessage)
-    print(errorMessage)
-
-
-# def formatEndOfFile(file): # FIX THIS
-#     with open(file, 'ab+') as f:   
-#         f.seek(-2, os.SEEK_END)
-#         f.truncate()
-#         f.write('\n]')
+def logError(logger, e, thread_number):
+    error_message = f'{getTimestamp()} [Thread-{thread_number}] {e}'
+    logger.log(logging.ERROR, error_message)
+    print(error_message)
