@@ -1,11 +1,6 @@
 
-
-PATH_BASE = '/s/parsons/b/others/sustain/water_quality_ingestion'
-
 from ThreadedDocumentProcessor import ThreadedDocumentProcessor
-import pymongo, sys
-sys.path.insert(0, PATH_BASE)
-import utils
+import pymongo, sys, utils
 
 
 siteLineMatrix = utils.getJSON('siteLineMatrix.json')
@@ -20,9 +15,9 @@ bodiesOfWaterCollection = db['water_quality_bodies_of_water']
 
 class DocumentProcessor(ThreadedDocumentProcessor):
     def __init__(self, collection, numberOfThreads, query):
-        super().__init__(collection, numberOfThreads, query, DocumentProcessor.addDataToCollections)
+        super().__init__(collection, numberOfThreads, query, DocumentProcessor.processDocument)
 
-    def addDataToCollections(self, document):
+    def processDocument(self, document):
         target_site_id = document['MonitoringLocationIdentifier']
         dataIsAssociatedWithPolygon = False
         dataIsAssociatedWithLine = False
