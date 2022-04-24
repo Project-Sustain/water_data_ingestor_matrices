@@ -45,7 +45,7 @@ class DocumentProcessor(ThreadedDocumentProcessor):
 
 
 def main(collection, numberOfThreads):
-    with open('startTime.txt', 'a') as f:
+    with open('startTime.txt', 'w') as f:
         message = f'{utils.getTimestamp()} Started'
         f.write(message)
     query = {}
@@ -57,5 +57,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print(f'Usage: python3 {sys.argv[0]} <collection_to_iterate> <number_of_threads>')
     collection = sys.argv[1]
-    numberOfThreads = sys.argv[2]
+    numberOfThreads = int(sys.argv[2])
     main(collection, numberOfThreads)
