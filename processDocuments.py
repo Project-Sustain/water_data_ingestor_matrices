@@ -1,15 +1,17 @@
 
+import json
+import os
 import sys, utils, pymongo
 from ThreadedDocumentProcessor import ThreadedDocumentProcessor
 
 siteLineMatrix = utils.getJSON('siteLineMatrix.json')
 sitePolygonMatrix = utils.getJSON('sitePolygonMatrix.json')
 
-mongo = pymongo.MongoClient("mongodb://lattice-100:27018/")
-db = mongo["sustaindb"]
-pipesCollection = db['water_quality_pipes']
-riversAndStreamsCollection = db['water_quality_rivers_and_streams']
-bodiesOfWaterCollection = db['water_quality_bodies_of_water']
+# mongo = pymongo.MongoClient("mongodb://lattice-100:27018/")
+# db = mongo["sustaindb"]
+# pipesCollection = db['water_quality_pipes']
+# riversAndStreamsCollection = db['water_quality_rivers_and_streams']
+# bodiesOfWaterCollection = db['water_quality_bodies_of_water']
 
 class DocumentProcessor(ThreadedDocumentProcessor):
     def __init__(self, collection, number_of_threads, query):
@@ -45,15 +47,29 @@ class DocumentProcessor(ThreadedDocumentProcessor):
                 dataIsAssociatedWithLine = True
                 break
 
+        del document['_id']
+
+        '''
+        Try writing these to 3 separate output files, might be easier on mongo
+        Then run 3 mongoimports when done with a batch
+        '''
         if dataIsAssociatedWithPolygon:
-            bodiesOfWaterCollection.insert_one(document)
+            destination = os.path.join('outputFiles/outputBodies.json')
+            # bodiesOfWaterCollection.insert_one(document)
         elif dataIsAssociatedWithLine:
-            riversAndStreamsCollection.insert_one(document)
+            destination = os.path.join('outputFiles/outputRivers.json')
+            # riversAndStreamsCollection.insert_one(document)
         else:
-            pipesCollection.insert_one(document)
+            # pipesCollection.insert_on
+            destination = os.path.join('outputFiles/outputPipes.json')
+        with self.lock:
+            with open(destination, 'a') as f:
+                f.write(',\n\t')
+                f.write(json.dumps(document))
 
 
 def main(collection, number_of_threads):
+
     query = {} # Update the `query` field to specify a mongo query
     documentProcessor = DocumentProcessor(collection, number_of_threads, query)
     documentProcessor.run()

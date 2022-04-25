@@ -38,7 +38,11 @@ class ThreadedDocumentProcessor(ABC):
         for thread in threads:
             thread.join()
 
-        with open(self.output_file, 'a') as f:
+        with open(os.path.join('outputFiles/outputBodies.json'), 'a') as f:
+            f.write('\n]')
+        with open(os.path.join('outputFiles/outputRivers.json'), 'a') as f:
+            f.write('\n]')
+        with open(os.path.join('outputFiles/outputPipes.json'), 'a') as f:
             f.write('\n]')
         
 
@@ -62,16 +66,7 @@ class ThreadedDocumentProcessor(ABC):
 
                 if utils.documentShouldBeProcessedByThisThread(thread_number, document_number, self.number_of_threads):
                     try:
-                        object_to_write = self.processDocument(self, document) # This is where we call the `processDocument()` fuction written in `processDocuments.py`
-                        if object_to_write: # If your `processDocument()` function returns a dictionary, write it to the output file
-                            with self.lock: # Thread-safe access to the output file
-                                with open(self.output_file, 'a') as f:
-                                    if document_number == 1:
-                                        f.write('[\n\t')
-                                        f.write(json.dumps(object_to_write))
-                                    else:
-                                        f.write(',\n\t')
-                                        f.write(json.dumps(object_to_write))
+                        self.processDocument(self, document) # This is where we call the `processDocument()` fuction written in `processDocuments.py`
 
                     except Exception as e:
                         utils.logError(self.error_logger, e, thread_number)
