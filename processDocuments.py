@@ -27,32 +27,29 @@ class DocumentProcessor(ThreadedDocumentProcessor):
         dataIsAssociatedWithPolygon = False
         dataIsAssociatedWithLine = False
 
-        for entry in sitePolygonMatrix:
-            if dataIsAssociatedWithPolygon: break
-            if target_site_id in list(entry.values())[0]:
-                document['BodyOfWater'] = list(entry.keys())[0]
-                dataIsAssociatedWithPolygon = True
-                break
-
         for entry in siteLineMatrix:
-            if dataIsAssociatedWithLine or dataIsAssociatedWithPolygon: break
+            if dataIsAssociatedWithLine: break
             if target_site_id in list(entry.values())[0]:
                 document['BodyOfWater'] = list(entry.keys())[0]
                 dataIsAssociatedWithLine = True
                 break
 
+        for entry in sitePolygonMatrix:
+            if dataIsAssociatedWithLine or dataIsAssociatedWithPolygon: break
+            if target_site_id in list(entry.values())[0]:
+                document['BodyOfWater'] = list(entry.keys())[0]
+                dataIsAssociatedWithPolygon = True
+                break
+
         del document['_id']
 
-        '''
-        Try writing these to 3 separate output files, might be easier on mongo
-        Then run 3 mongoimports when done with a batch
-        '''
         if dataIsAssociatedWithPolygon:
             destination = os.path.join('outputFiles/outputBodies.json')
         elif dataIsAssociatedWithLine:
             destination = os.path.join('outputFiles/outputRivers.json')
         else:
             destination = os.path.join('outputFiles/outputPipes.json')
+            
         with self.lock:
             with open(destination, 'a') as f:
                 f.write(',\n\t')
@@ -60,13 +57,6 @@ class DocumentProcessor(ThreadedDocumentProcessor):
 
 
 def main(collection, number_of_threads):
-    
-    with open(os.path.join('outputFiles/outputBodies.json'), 'a') as f:
-        f.write('[\n')
-    with open(os.path.join('outputFiles/outputRivers.json'), 'a') as f:
-        f.write('[\n')
-    with open(os.path.join('outputFiles/outputPipes.json'), 'a') as f:
-        f.write('[\n')
 
     query = {} # Update the `query` field to specify a mongo query
     documentProcessor = DocumentProcessor(collection, number_of_threads, query)
