@@ -60,6 +60,13 @@ class DocumentProcessor(ThreadedDocumentProcessor):
 
 
 def main(collection, number_of_threads):
+    
+    with open(os.path.join('outputFiles/outputBodies.json'), 'a') as f:
+        f.write('[\n')
+    with open(os.path.join('outputFiles/outputRivers.json'), 'a') as f:
+        f.write('[\n')
+    with open(os.path.join('outputFiles/outputPipes.json'), 'a') as f:
+        f.write('[\n')
 
     query = {} # Update the `query` field to specify a mongo query
     documentProcessor = DocumentProcessor(collection, number_of_threads, query)
