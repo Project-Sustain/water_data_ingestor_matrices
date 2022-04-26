@@ -1,13 +1,14 @@
 
 import sys, utils, os, json
+from os.path import exists
 from ThreadedDocumentProcessor import ThreadedDocumentProcessor
 
 sorted_line_matrix = utils.getJSON('sortedLineMatrix.json')
 sorted_polygon_matrix = utils.getJSON('sortedPolygonMatrix.json')
 
 class DocumentProcessor(ThreadedDocumentProcessor):
-    def __init__(self, collection, number_of_threads, query):
-        super().__init__(collection, number_of_threads, query, DocumentProcessor.processDocument)
+    def __init__(self, collection, number_of_threads, query, firstBody, firstRiver, firstPipe):
+        super().__init__(collection, number_of_threads, query, firstBody, firstRiver, firstPipe, DocumentProcessor.processDocument)
 
     def processDocument(self, document):
         '''
@@ -36,22 +37,61 @@ class DocumentProcessor(ThreadedDocumentProcessor):
         del document['_id']
 
         if dataIsAssociatedWithPolygon:
-            destination = os.path.join('outputFiles/outputBodies.json')
+            destination = os.path.join('outputFiles/bodies.json')
+            with self.lock:
+                with open(destination, 'a') as f:
+                    if self.firstBody:
+                        f.write('\t')
+                        self.firstBody = False
+                    else:
+                        f.write(',\n\t')
+                    f.write(json.dumps(document))
+
         elif dataIsAssociatedWithLine:
-            destination = os.path.join('outputFiles/outputRivers.json')
+            destination = os.path.join('outputFiles/rivers.json')
+            with self.lock:
+                with open(destination, 'a') as f:
+                    if self.firstRiver:
+                        f.write('\t')
+                        self.firstRiver = False
+                    else:
+                        f.write(',\n\t')
+                    f.write(json.dumps(document))
+
         else:
-            destination = os.path.join('outputFiles/outputPipes.json')
-            
-        with self.lock:
-            with open(destination, 'a') as f:
-                f.write(',\n\t')
-                f.write(json.dumps(document))
+            destination = os.path.join('outputFiles/pipes.json')
+            with self.lock:
+                with open(destination, 'a') as f:
+                    if self.firstPipe:
+                        f.write('\t')
+                        self.firstPipe = False
+                    else:
+                        f.write(',\n\t')
+                    f.write(json.dumps(document))
 
 
 def main(collection, number_of_threads):
+    if not exists('outputFiles/bodies.json'):
+        with open('outputFiles/bodies.json', 'a') as f:
+            f.write('[\n')
+            firstBody = True
+    else:
+        firstBody = False
+    if not exists('outputFiles/rivers.json'):
+        with open('outputFiles/rivers.json', 'a') as f:
+            f.write('[\n')
+            firstRiver = True
+    else:
+        firstRiver = False
+    if not exists('outputFiles/pipes.json'):
+        with open('outputFiles/pipes.json', 'a') as f:
+            f.write('[\n')
+            firstPipe = True
+    else:
+        firstPipe = False
 
     query = {} # Update the `query` field to specify a mongo query
-    documentProcessor = DocumentProcessor(collection, number_of_threads, query)
+    documentProcessor = DocumentProcessor(collection, number_of_threads, query, firstBody, firstRiver, firstPipe)
     documentProcessor.run()
 
 

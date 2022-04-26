@@ -1,6 +1,6 @@
 
 from abc import ABC
-import pymongo, os, logging, json
+import pymongo, os, logging
 from time import sleep
 from os.path import exists
 from threading import Thread, Lock
@@ -10,8 +10,11 @@ import utils
 
 class ThreadedDocumentProcessor(ABC):
 
-    def __init__(self, collection_name, number_of_threads, query, processDocumentFunction):
+    def __init__(self, collection_name, number_of_threads, query, firstBody, firstRiver, firstPipe, processDocumentFunction):
 
+        self.firstBody = firstBody
+        self.firstRiver = firstRiver
+        self.firstPipe = firstPipe
         self.processDocument = processDocumentFunction
         self.lock = Lock()
         self.collection_name = collection_name
@@ -38,11 +41,11 @@ class ThreadedDocumentProcessor(ABC):
         for thread in threads:
             thread.join()
 
-        with open(os.path.join('outputFiles/outputBodies.json'), 'a') as f:
+        with open(os.path.join('outputFiles/bodies.json'), 'a') as f:
             f.write('\n]')
-        with open(os.path.join('outputFiles/outputRivers.json'), 'a') as f:
+        with open(os.path.join('outputFiles/rivers.json'), 'a') as f:
             f.write('\n]')
-        with open(os.path.join('outputFiles/outputPipes.json'), 'a') as f:
+        with open(os.path.join('outputFiles/pipes.json'), 'a') as f:
             f.write('\n]')
         
 
@@ -67,7 +70,6 @@ class ThreadedDocumentProcessor(ABC):
                 if utils.documentShouldBeProcessedByThisThread(thread_number, document_number, self.number_of_threads):
                     try:
                         self.processDocument(self, document) # This is where we call the `processDocument()` fuction written in `processDocuments.py`
-
                     except Exception as e:
                         utils.logError(self.error_logger, e, thread_number)
 
