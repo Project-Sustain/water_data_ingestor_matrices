@@ -3,6 +3,19 @@ import logging, json, os
 from datetime import datetime
 
 
+def binary_search(arr, low, high, x):
+    if high >= low:
+        mid = (high + low) // 2
+        if list(arr[mid].keys())[0] == x:
+            return list(arr[mid].values())[0]
+        elif list(arr[mid].keys())[0] > x:
+            return binary_search(arr, low, mid - 1, x)
+        else:
+            return binary_search(arr, mid + 1, high, x)
+    else:
+        return None
+
+
 def getJSON(file):
     f = open(file)
     json_object = json.load(f)
