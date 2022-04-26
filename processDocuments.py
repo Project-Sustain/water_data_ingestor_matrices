@@ -1,11 +1,9 @@
 
-import json
-import os
-import sys, utils
+import sys, utils, os, json, bisect
 from ThreadedDocumentProcessor import ThreadedDocumentProcessor
 
-siteLineMatrix = utils.getJSON('siteLineMatrix.json')
-sitePolygonMatrix = utils.getJSON('sitePolygonMatrix.json')
+sorted_line_matrix = utils.getJSON('sortedLineMatrix.json')
+sorted_polygon_matrix = utils.getJSON('sortedPolygonMatrix.json')
 
 class DocumentProcessor(ThreadedDocumentProcessor):
     def __init__(self, collection, number_of_threads, query):
@@ -20,26 +18,20 @@ class DocumentProcessor(ThreadedDocumentProcessor):
         Update this function to perform whatever actions you need to on each document.
         '''
 
-        # This needs to be optimized
-        # Consider getting the state that target_site_id is in, only look at BodyOfWater id's from that same state
-
         target_site_id = document['MonitoringLocationIdentifier']
         dataIsAssociatedWithPolygon = False
         dataIsAssociatedWithLine = False
 
-        for entry in siteLineMatrix:
-            if dataIsAssociatedWithLine: break
-            if target_site_id in list(entry.values())[0]:
-                document['BodyOfWater'] = list(entry.keys())[0]
-                dataIsAssociatedWithLine = True
-                break
-
-        for entry in sitePolygonMatrix:
-            if dataIsAssociatedWithLine or dataIsAssociatedWithPolygon: break
-            if target_site_id in list(entry.values())[0]:
-                document['BodyOfWater'] = list(entry.keys())[0]
+        body_of_water_in_sorted_line_matrix = utils.binary_search(sorted_line_matrix, 0, len(sorted_line_matrix)-1, target_site_id)
+        if body_of_water_in_sorted_line_matrix:
+            document['BodyOfWater'] = body_of_water_in_sorted_line_matrix
+            dataIsAssociatedWithLine = True
+        
+        else:
+            body_of_water_in_sorted_polygon_matrix = utils.binary_search(sorted_polygon_matrix, 0, len(sorted_line_matrix)-1, target_site_id)
+            if body_of_water_in_sorted_polygon_matrix:
+                document['BodyOfWater'] = body_of_water_in_sorted_polygon_matrix
                 dataIsAssociatedWithPolygon = True
-                break
 
         del document['_id']
 
