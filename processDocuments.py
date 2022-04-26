@@ -1,5 +1,5 @@
 
-import sys, utils, os, json, bisect
+import sys, utils, os, json
 from ThreadedDocumentProcessor import ThreadedDocumentProcessor
 
 sorted_line_matrix = utils.getJSON('sortedLineMatrix.json')
@@ -28,7 +28,7 @@ class DocumentProcessor(ThreadedDocumentProcessor):
             dataIsAssociatedWithLine = True
         
         else:
-            body_of_water_in_sorted_polygon_matrix = utils.binary_search(sorted_polygon_matrix, 0, len(sorted_line_matrix)-1, target_site_id)
+            body_of_water_in_sorted_polygon_matrix = utils.binary_search(sorted_polygon_matrix, 0, len(sorted_polygon_matrix)-1, target_site_id)
             if body_of_water_in_sorted_polygon_matrix:
                 document['BodyOfWater'] = body_of_water_in_sorted_polygon_matrix
                 dataIsAssociatedWithPolygon = True
